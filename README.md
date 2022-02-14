@@ -1,5 +1,5 @@
 # Collaborative AI @ TU Delft
-This is a template repository for the Negotiation Practical Assignment of the course on Collaborative AI at the TU Delft. This template is aimed at students that want to implement their agent in Python.
+This is the project repository for the Negotiation Practical Assignment of the course on Collaborative AI at the TU Delft for Group 73. This project is aimed implementing an agent in Python.
 
 ## Overview
 - directories:
@@ -11,18 +11,8 @@ This is a template repository for the Negotiation Practical Assignment of the co
     - `requirements.txt`: Python dependencies for your agent.
     - `requirements_allowed.txt`: Additional dependencies that you are allowed to use (ask TA's if you need unlisted packages).
 
-## Installation
-We recommend using Python 3.9. The required dependencies are listed in the `requirements.txt` file and can be installed through `pip install -r requirements.txt`.
-
-As already mentioned, should you need any additional dependencies, you can ask the TA's of this course. A few of the most common dependencies are already listed in `requirements_allowed.txt` file. If you require another package that is not listed, **ask first**.
-
-For VSCode devcontainer users: We included a devcontainer specification in the `.devcontainer` directory.
-
-## Quickstart
-- Copy and rename the template agent's directory, files and classname.
-- Read through the code to familiarise yourself with its workings. The agent already works but is not very good.
-- Develop your agent in the copied directory. Make sure that all the files that you use are in the directory.
-- Test your agent through `run.py`, results will be returned as dictionaries and saved as json-file. A plot of the negotiation trace will also be saved.
-
-## More information
-[More documentation can be found here](https://tracinsy.ewi.tudelft.nl/pubtrac/GeniusWebPython/wiki/WikiStart). Part of this documentation was written for the Java version of GeniusWeb, but classes and functionality are left identical as much as possible.
+## Authors
+Thijs Nulle
+Shivani Singh
+Jean-Paul Smit
+Helena Westermann
