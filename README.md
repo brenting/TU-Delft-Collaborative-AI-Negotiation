@@ -12,7 +12,7 @@ This is the project repository for the Negotiation Practical Assignment of the c
     - `requirements_allowed.txt`: Additional dependencies that you are allowed to use (ask TA's if you need unlisted packages).
 
 ## Authors
-Thijs Nulle
-Shivani Singh
-Jean-Paul Smit
-Helena Westermann
+- Thijs Nulle
+- Shivani Singh
+- Jean-Paul Smit
+- Helena Westermann
