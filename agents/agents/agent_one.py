@@ -27,6 +27,8 @@ class AgentOne(DefaultParty):
         self._last_received_bid: Bid = None
         self._best_received_bid = (0.0, None)
 
+        self.utility = 0.9
+
     def notifyChange(self, info: Inform):
         """This is the entry point of all interaction with your agent after is has been initialised.
 
@@ -56,7 +58,7 @@ class AgentOne(DefaultParty):
             self.all_bids.sort(key=lambda x:x[0], reverse=True)
 
             # Filter the list of all bids such that U(s) > 0.8.
-            self.good_bids = [ bid for (u, bid) in self.all_bids if u > 0.8]
+            self.good_bids = [ bid for (u, bid) in self.all_bids if u > self.utility]
 
         # ActionDone is an action send by an opponent (an offer or an accept)
         elif isinstance(info, ActionDone):
@@ -127,8 +129,29 @@ class AgentOne(DefaultParty):
         if self._profile.getProfile().getUtility(bid) > self._best_received_bid[0]:
             self._best_received_bid = (self._profile.getProfile().getUtility(bid), bid)
 
-        # Accept the bid if the utility is greater than [0.9, 0.7], depending on current time T.
-        return self._profile.getProfile().getUtility(bid) > (0.9 - self._progress.getCurrentRound() / self._progress.getTotalRounds() * 0.2)
+        # Accept the bid if the utility is greater than [0.8, 0.7], depending on current time T.
+        return self._profile.getProfile().getUtility(bid) > self.utility
 
     def _findBid(self) -> Bid:
-        return random.choice(self.good_bids)
+        self.update_distances()
+        return random.choice(self.closest_bids)
+
+    def distance(self, b1: Bid, b2: Bid):
+        if not b1 or not b2:
+            return 0
+
+        sum = 0
+        for issue in b1.getIssues():
+            if b1.getValue(issue) == b2.getValue(issue):
+                sum += self.counter[issue][b1.getValue(issue)] / (self._progress.getCurrentRound() + 1)
+
+        return sum
+
+    def update_distances(self):
+        distances = [ self.distance(bid, self._last_received_bid) for bid in self.good_bids ]
+        closest_bids = [ (x,y) for x,y in sorted(zip(self.good_bids, distances), key=lambda x:x[1]) ]
+        self.closest_bids = [ x for x,y in closest_bids[:20] ]
+
+        if closest_bids[0][1] < 1.5:
+            self.utility -= 0.01
+            self.good_bids = [ bid for (u, bid) in self.all_bids if u > self.utility]

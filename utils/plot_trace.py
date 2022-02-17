@@ -23,6 +23,8 @@ def plot_trace(results_trace: dict, plot_file: str):
                 accept["y"].append(util)
                 accept["bids"].append(offer["bid"]["issuevalues"])
 
+    print(accept)
+
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(
