@@ -4,5 +4,4 @@ __pycache__
 .DS_Store
 *.log
 results/
-utils/
 *.txt
