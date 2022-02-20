@@ -1,6 +1,7 @@
 import json
 import os
 import random
+import time
 
 from utils.plot_trace import plot_trace
 from utils.runners import run_session
@@ -17,6 +18,8 @@ if not os.path.exists("results"):
 rand_x = random.randint(0,9)
 rand_agent = random.choice([
     "agents.agents.agent_one.AgentOne",
+    "agents.agents.agent_two.AgentTwo",
+    "agents.agents.agent_three.AgentThree",
     "agents.boulware_agent.boulware_agent.BoulwareAgent",
     "agents.template_agent.template_agent.TemplateAgent",
     "agents.conceder_agent.conceder_agent.ConcederAgent",
@@ -25,11 +28,11 @@ rand_agent = random.choice([
 
 settings = {
     "agents": [
-        "agents.agents.agent_one.AgentOne",
+        "agents.agents.agent_three.AgentThree",
         rand_agent
     ],
     "profiles": [f"domains/domain0{rand_x}/profileA.json", f"domains/domain0{rand_x}/profileB.json"],
-    "deadline_rounds": 200
+    "deadline_rounds": 50
 }
 
 # run a session and obtain results in dictionaries
@@ -37,6 +40,8 @@ results_trace, results_summary = run_session(settings)
 
 # plot trace to html file
 plot_trace(results_trace, "results/trace_plot.html")
+
+print(results_summary)
 
 # write results to file
 with open("results/results_trace.json", "w") as f:

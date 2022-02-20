@@ -18,7 +18,7 @@ from geniusweb.profileconnection.ProfileConnectionFactory import (
     ProfileConnectionFactory,
 )
 
-class AgentOne(DefaultParty):
+class AgentTwo(DefaultParty):
 
     def __init__(self):
         super().__init__()
@@ -31,6 +31,7 @@ class AgentOne(DefaultParty):
 
     def notifyChange(self, info: Inform):
         """This is the entry point of all interaction with your agent after is has been initialised.
+
         Args:
             info (Inform): Contains either a request for action or information.
         """
@@ -48,6 +49,10 @@ class AgentOne(DefaultParty):
             self._profile = ProfileConnectionFactory.create(
                 info.getProfile().getURI(), self.getReporter()
             )
+
+            # Calculate the reservation value.
+            # self.reservation_value = self._profile.getProfile().getUtility(self._profile.getProfile().getReservationBid())
+            self.reservation_value = 0.6
 
             # Create a counter for all the values per issue of the opponent.
             self.counter = dict((k,Counter()) for k in self._profile.getProfile().getUtilities().keys())
@@ -132,25 +137,26 @@ class AgentOne(DefaultParty):
         return self._profile.getProfile().getUtility(bid) > self.utility
 
     def _findBid(self) -> Bid:
-        self.update_distances()
-        return random.choice(self.closest_bids)
+        if self._progress.getCurrentRound() / self._progress.getTotalRounds() > 0.95 and \
+           self._profile.getProfile().getUtility(self._best_received_bid[1]) > self.utility:
+            return self._best_received_bid[1]
 
-    def distance(self, b1: Bid, b2: Bid):
-        if not b1 or not b2:
+        self.update_distances()
+
+        # Return any of the closest bids, or a good bid as an alternative.
+        return random.choice(self.closest_bids) if self.closest_bids else random.choice(self.good_bids)
+
+    def similarity_to_last_received_bid(self, bid: Bid):
+        if not bid or not self._last_received_bid:
             return 0
 
-        sum = 0
-        for issue in b1.getIssues():
-            if b1.getValue(issue) == b2.getValue(issue):
-                sum += self.counter[issue][b1.getValue(issue)] / (self._progress.getCurrentRound() + 1)
-
-        return sum
+        return sum([ self.counter[issue][bid.getValue(issue)] / (self._progress.getCurrentRound() + 1) for issue in bid.getIssues()])
 
     def update_distances(self):
-        distances = [ self.distance(bid, self._last_received_bid) for bid in self.good_bids ]
-        closest_bids = [ (x,y) for x,y in sorted(zip(self.good_bids, distances), key=lambda x:x[1]) ]
-        self.closest_bids = [ x for x,y in closest_bids[:20] ]
+        distances = [ self.similarity_to_last_received_bid(bid) for bid in self.good_bids ]
+        closest_bids = [ (x,y) for x,y in sorted(zip(self.good_bids, distances), key=lambda x:x[1], reverse=True) ]
+        self.closest_bids = [ x for x,y in closest_bids[:10] ]
 
-        if closest_bids[0][1] < 1.5:
-            self.utility -= 0.01
+        if closest_bids and closest_bids[0][1] < 1.0 + (self._progress.getCurrentRound() / self._progress.getTotalRounds())**3 * 2.0:
+            self.utility = max(self.utility - 0.01, self.reservation_value)
             self.good_bids = [ bid for (u, bid) in self.all_bids if u > self.utility]
