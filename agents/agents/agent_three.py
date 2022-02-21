@@ -133,23 +133,35 @@ class AgentThree(DefaultParty):
         if self._profile.getProfile().getUtility(bid) > self._best_received_bid[0]:
             self._best_received_bid = (self._profile.getProfile().getUtility(bid), bid)
 
-        # Accept the bid if the utility is greater than [0.8, 0.7], depending on current time T.
+        # Accept the bid if the utility is greater than out utility value.
         return self._profile.getProfile().getUtility(bid) > self.utility
 
     def _findBid(self) -> Bid:
-        if self._progress.getCurrentRound() / self._progress.getTotalRounds() > 0.95 and \
-           self._profile.getProfile().getUtility(self._best_received_bid[1]) > self.utility:
+        if self._progress.getCurrentRound() / self._progress.getTotalRounds() < 0.25:
+            return random.choice(self.sort_bids(self.good_bids)[:10])
+
+        if self.opponent_is_hardliner():
+            return random.choice(self.sort_bids(self.good_bids)[:10])
+
+        # If we are in the last 5% of turns, propose the best received bid if it is better than our reservation value.
+        if self._progress.getTotalRounds() - self._progress.getCurrentRound() < 5 and \
+           self._profile.getProfile().getUtility(self._best_received_bid[1]) > self.reservation_value:
             return self._best_received_bid[1]
 
-        self.update_distances()
+        # Update good bids and similarities to previously received bid.
+        self.update_similarities()
 
-        if self.closest_bids:
-            return [x for _, x in sorted(zip([self._profile.getProfile().getUtility(x) for x in self.closest_bids], self.closest_bids), key=lambda x:x[0], reverse=True)][0]
-        else:
-            return random.choice(self.good_bids)
+        # If the closest bid is not similar enough, update our utility value and good bids based on the current round.
+        closest_utility = self._profile.getProfile().getUtility(self.closest_bids[0])
+        if (self.closest_bids and closest_utility < 2 * (self._progress.getCurrentRound() / self._progress.getTotalRounds())**2) or \
+           (len(self.good_bids) == 1):
+            self.utility = max(self.utility - 0.01, self.reservation_value)
+            self.good_bids = [ bid for (u, bid) in self.all_bids if u > self.utility]
 
-        # # Return any of the closest bids, or a good bid as an alternative.
-        # return random.choice(self.closest_bids) if self.closest_bids else random.choice(self.good_bids)
+        bid = random.choice(self.sort_bids(self.closest_bids)[:5])
+
+        # Return one of the best bid for us from the `closest_bids` list.
+        return bid
 
     def similarity_to_last_received_bid(self, bid: Bid):
         if not bid or not self._last_received_bid:
@@ -157,11 +169,26 @@ class AgentThree(DefaultParty):
 
         return sum([ self.counter[issue][bid.getValue(issue)] / (self._progress.getCurrentRound() + 1) for issue in bid.getIssues()])
 
-    def update_distances(self):
-        distances = [ self.similarity_to_last_received_bid(bid) for bid in self.good_bids ]
-        closest_bids = [ (x,y) for x,y in sorted(zip(self.good_bids, distances), key=lambda x:x[1], reverse=True) ]
-        self.closest_bids = [ x for x,y in closest_bids[:10] ]
+    def update_similarities(self):
+        # Compute the similarities based on the `similarity_to_last_received_bid` function.
+        similarities = [ self.similarity_to_last_received_bid(bid) for bid in self.good_bids ]
 
-        if closest_bids and closest_bids[0][1] < (self._progress.getCurrentRound() / self._progress.getTotalRounds())**3 * 5.0:
-            self.utility = max(self.utility - 0.01, self.reservation_value)
-            self.good_bids = [ bid for (u, bid) in self.all_bids if u > self.utility]
+        # Only store the 10 closest bids.
+        self.closest_bids = [ x for x,y in sorted(zip(self.good_bids, similarities), key=lambda x:x[1], reverse=True)[:20] ]
+
+    def sort_bids(self, bids):
+        return [x for _, x in sorted(zip([self._profile.getProfile().getUtility(x) for x in bids], bids), key=lambda x:x[0], reverse=True)]
+
+    def opponent_is_hardliner(self):
+        num_unchanged = sum([ any([ x[y] / self._progress.getCurrentRound() > 0.75 for y in x ]) for x in self.counter.values()])
+
+        return num_unchanged / len(self.counter) >= 0.75
+
+    def remove_bid(self, other: Bid):
+        if sum([ x > self.utility for x, _ in self.all_bids ]) <= 1:
+            return
+
+        for i, bid in enumerate(self.all_bids):
+            if all([ bid[1].getValue(issue) == other.getValue(issue) for issue in bid[1].getIssues() ]):
+                del self.all_bids[i]
+                break
