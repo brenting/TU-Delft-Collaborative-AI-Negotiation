@@ -1,12 +1,15 @@
 import json
 import os
+import time
 
 from utils.plot_trace import plot_trace
 from utils.runners import run_session
 
+RESULTS_DIR = f"results/{time.strftime('%Y%m%d-%H%M%S')}"
+
 # create results directory if it does not exist
-if not os.path.exists("results"):
-    os.mkdir("results")
+if not os.path.exists(RESULTS_DIR):
+    os.makedirs(RESULTS_DIR)
 
 # Settings to run a negotiation session:
 #   We need to specify the classpath of 2 agents to start a negotiation.
@@ -25,10 +28,10 @@ settings = {
 results_trace, results_summary = run_session(settings)
 
 # plot trace to html file
-plot_trace(results_trace, "results/trace_plot.html")
+plot_trace(results_trace, f"{RESULTS_DIR}/trace_plot.html")
 
 # write results to file
-with open("results/results_trace.json", "w") as f:
+with open(f"{RESULTS_DIR}/results_trace.json", "w") as f:
     f.write(json.dumps(results_trace, indent=2))
-with open("results/results_summary.json", "w") as f:
+with open(f"{RESULTS_DIR}/results_summary.json", "w") as f:
     f.write(json.dumps(results_summary, indent=2))

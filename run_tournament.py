@@ -1,11 +1,14 @@
 import json
 import os
+import time
 
 from utils.runners import run_tournament
 
+RESULTS_DIR = f"results/{time.strftime('%Y%m%d-%H%M%S')}"
+
 # create results directory if it does not exist
-if not os.path.exists("results"):
-    os.mkdir("results")
+if not os.path.exists(RESULTS_DIR):
+    os.makedirs(RESULTS_DIR)
 
 # Settings to run a tournament:
 #   We need to specify the classpath all agents that will participate in the tournament
@@ -32,8 +35,8 @@ tournament_settings = {
 tournament, results_summaries = run_tournament(tournament_settings)
 
 # save the tournament settings for reference
-with open("results/tournament.json", "w") as f:
+with open(f"{RESULTS_DIR}/tournament.json", "w") as f:
     f.write(json.dumps(tournament, indent=2))
 # save the result summaries
-with open("results/results_summaries.json", "w") as f:
+with open(f"{RESULTS_DIR}/results_summaries.json", "w") as f:
     f.write(json.dumps(results_summaries, indent=2))
