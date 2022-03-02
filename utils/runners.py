@@ -122,7 +122,7 @@ def run_tournament(tournament_settings: dict) -> Tuple[list, list]:
     return tournament, results_summaries
 
 
-def process_results(results_class, results_dict):
+def process_results(results_class: SAOPState, results_dict):
     results_dict = results_dict["SAOPState"]
 
     # dict to translate geniusweb agent reference to Python class name
