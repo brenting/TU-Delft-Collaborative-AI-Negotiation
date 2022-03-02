@@ -56,7 +56,8 @@ class TemplateAgent(DefaultParty):
             self._profile = ProfileConnectionFactory.create(
                 info.getProfile().getURI(), self.getReporter()
             )
-        # ActionDone is an action send by an opponent (an offer or an accept)
+        # ActionDone informs you of an action (an offer or an accept) 
+        # that is performed by one of the agents (including yourself).
         elif isinstance(info, ActionDone):
             action: Action = cast(ActionDone, info).getAction()
 
