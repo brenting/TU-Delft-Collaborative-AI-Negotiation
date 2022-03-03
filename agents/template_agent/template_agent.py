@@ -108,7 +108,7 @@ class TemplateAgent(DefaultParty):
 
     # execute a turn
     def _myTurn(self):
-        # check if the last received offer if the opponent is good enough
+        # check if the last received offer is good enough
         if self._isGood(self._last_received_bid):
             # if so, accept the offer
             action = Accept(self._me, self._last_received_bid)
