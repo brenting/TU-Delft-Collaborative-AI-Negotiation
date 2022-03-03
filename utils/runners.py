@@ -156,7 +156,7 @@ def process_results(results_class: SAOPState, results_dict):
             # add bid utility of both agents if bid is not None
             bid = action_class.getBid()
             if bid is None:
-                raise ValueError("Found `None` value in sequence of actions")
+                raise ValueError(f"Found `None` value in sequence of actions: {action_class}")
             else:
                 offer["utilities"] = {
                     k: float(v.getUtility(bid)) for k, v in utility_funcs.items()
