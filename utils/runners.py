@@ -1,3 +1,4 @@
+import logging
 from itertools import permutations
 from math import factorial
 from typing import Tuple
@@ -152,11 +153,14 @@ def process_results(results_class: SAOPState, results_dict):
             else:
                 continue
 
-            # add utility of both agents
+            # add bid utility of both agents if bid is not None
             bid = action_class.getBid()
-            offer["utilities"] = {
-                k: float(v.getUtility(bid)) for k, v in utility_funcs.items()
-            }
+            if bid is None:
+                raise ValueError("Found `None` value in sequence of actions")
+            else:
+                offer["utilities"] = {
+                    k: float(v.getUtility(bid)) for k, v in utility_funcs.items()
+                }
 
         results_summary["num_offers"] = num_offer + 1
 
