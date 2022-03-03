@@ -60,10 +60,13 @@ class TemplateAgent(DefaultParty):
         # that is performed by one of the agents (including yourself).
         elif isinstance(info, ActionDone):
             action: Action = cast(ActionDone, info).getAction()
+            actor = action.getActor()
 
-            # if it is an offer, set the last received bid
-            if isinstance(action, Offer):
-                self._last_received_bid = cast(Offer, action).getBid()
+            # ignore action if it is our action
+            if actor != self._me:
+                # if it is an offer, set the last received bid
+                if isinstance(action, Offer):
+                    self._last_received_bid = cast(Offer, action).getBid()
         # YourTurn notifies you that it is your turn to act
         elif isinstance(info, YourTurn):
             # execute a turn
